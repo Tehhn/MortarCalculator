@@ -12,6 +12,8 @@
     try {
       var mode = localStorage.getItem('fmp-theme-mode');
       if (mode === 'light' || mode === 'dark') document.documentElement.setAttribute('data-theme', mode);
+      var accent = localStorage.getItem('mdc-accent');
+      if (accent) document.documentElement.setAttribute('data-accent', accent);
     } catch (e) {}
   })();
 </script>
@@ -25,13 +27,15 @@
     --border: rgba(28,43,58,0.18);
     --ink: #1c2b3a;
     --ink-muted: #56666e;
-    --accent: #b85c12;
-    --accent-strong: #96490c;
+    --accent: #235f8a;
+    --accent-strong: #1c4d70;
     --accent-contrast: #fff8f0;
-    --needle: #b85c12;
+    --needle: #235f8a;
     --danger: #9a2f2f;
     --focus: #2f6f8f;
   }
+  :root[data-accent="green"] { --accent: #4f6b34; --accent-strong: #3e5428; --needle: #4f6b34; }
+  :root[data-accent="red"] { --accent: #a83a2e; --accent-strong: #8a2e24; --needle: #a83a2e; }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0e1a1c;
@@ -42,13 +46,15 @@
       --border: rgba(210,230,222,0.16);
       --ink: #dfeee7;
       --ink-muted: #8ea89d;
-      --accent: #e08a3c;
-      --accent-strong: #f2a259;
-      --accent-contrast: #17110a;
-      --needle: #e08a3c;
+      --accent: #6cb8e0;
+      --accent-strong: #8ccbe8;
+      --accent-contrast: #0d2330;
+      --needle: #6cb8e0;
       --danger: #e08484;
       --focus: #6fc3d9;
     }
+    :root:not([data-theme="light"])[data-accent="green"] { --accent: #8bbf62; --accent-strong: #a3d17e; --needle: #8bbf62; }
+    :root:not([data-theme="light"])[data-accent="red"] { --accent: #e2685c; --accent-strong: #ef8a80; --needle: #e2685c; }
   }
   :root[data-theme="dark"] {
     --bg: #0e1a1c;
@@ -59,13 +65,15 @@
     --border: rgba(210,230,222,0.16);
     --ink: #dfeee7;
     --ink-muted: #8ea89d;
-    --accent: #e08a3c;
-    --accent-strong: #f2a259;
-    --accent-contrast: #17110a;
-    --needle: #e08a3c;
+    --accent: #6cb8e0;
+    --accent-strong: #8ccbe8;
+    --accent-contrast: #0d2330;
+    --needle: #6cb8e0;
     --danger: #e08484;
     --focus: #6fc3d9;
   }
+  :root[data-theme="dark"][data-accent="green"] { --accent: #8bbf62; --accent-strong: #a3d17e; --needle: #8bbf62; }
+  :root[data-theme="dark"][data-accent="red"] { --accent: #e2685c; --accent-strong: #ef8a80; --needle: #e2685c; }
 
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -144,6 +152,28 @@
   .seg-btn + .seg-btn { border-left: 1px solid var(--border); }
   .seg-btn.active { background: var(--accent); color: var(--accent-contrast); }
   .seg-btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .swatches {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: var(--sw);
+    padding: 0;
+    cursor: pointer;
+  }
+  .swatch.active {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--surface);
+  }
+  .swatch:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
@@ -296,19 +326,21 @@
     border-color: var(--accent);
     color: var(--accent-contrast);
   }
-  .chip .chip-del {
+  .chip .chip-edit, .chip .chip-del {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1;
     color: var(--ink-muted);
   }
+  .chip .chip-edit:hover { background: var(--border); color: var(--ink); }
   .chip .chip-del:hover { background: var(--border); color: var(--danger); }
-  .chip.active .chip-del { color: var(--accent-contrast); }
+  .chip.active .chip-edit, .chip.active .chip-del { color: var(--accent-contrast); }
+  .chip.active .chip-edit:hover { background: rgba(0,0,0,0.15); color: var(--ink); }
   .chip.active .chip-del:hover { background: rgba(0,0,0,0.15); color: var(--danger); }
 
   .readout {
@@ -407,6 +439,11 @@
       <button type="button" class="seg-btn" data-mode="light">Light</button>
       <button type="button" class="seg-btn" data-mode="dark">Dark</button>
     </div>
+    <div class="swatches" role="group" aria-label="Faction color">
+      <button type="button" class="swatch" data-accent="blue" style="--sw:#235f8a" aria-label="Lonestar" title="Lonestar"></button>
+      <button type="button" class="swatch" data-accent="green" style="--sw:#4f6b34" aria-label="Manticore" title="Manticore"></button>
+      <button type="button" class="swatch" data-accent="red" style="--sw:#a83a2e" aria-label="Valkyra" title="Valkyra"></button>
+    </div>
   </div>
 </div>
 
@@ -479,16 +516,25 @@
   (function () {
     const root = document.documentElement;
     const modeButtons = document.querySelectorAll('.seg-btn');
+    const swatchButtons = document.querySelectorAll('.swatch');
 
     function setActiveButtons() {
       const mode = root.getAttribute('data-theme');
+      const accent = root.getAttribute('data-accent') || 'blue';
       modeButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === mode));
+      swatchButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.accent === accent));
     }
     setActiveButtons();
 
     modeButtons.forEach((btn) => btn.addEventListener('click', () => {
       root.setAttribute('data-theme', btn.dataset.mode);
       try { localStorage.setItem('fmp-theme-mode', btn.dataset.mode); } catch (e) {}
+      setActiveButtons();
+    }));
+
+    swatchButtons.forEach((btn) => btn.addEventListener('click', () => {
+      root.setAttribute('data-accent', btn.dataset.accent);
+      try { localStorage.setItem('mdc-accent', btn.dataset.accent); } catch (e) {}
       setActiveButtons();
     }));
   })();
@@ -546,7 +592,7 @@
     try { localStorage.setItem(PRESETS_KEY, JSON.stringify(presets)); } catch (e) {}
   }
 
-  function renderChipRow(container, list, activeId, onSelect, onDelete) {
+  function renderChipRow(container, list, activeId, onSelect, onDelete, onRename) {
     container.innerHTML = '';
     list.forEach((entry) => {
       const chip = document.createElement('button');
@@ -558,6 +604,12 @@
       label.textContent = entry.name;
       chip.appendChild(label);
 
+      const edit = document.createElement('span');
+      edit.className = 'chip-edit';
+      edit.textContent = '✎';
+      edit.setAttribute('aria-label', `Rename ${entry.name}`);
+      chip.appendChild(edit);
+
       const del = document.createElement('span');
       del.className = 'chip-del';
       del.textContent = '×';
@@ -565,8 +617,12 @@
       chip.appendChild(del);
 
       chip.addEventListener('click', (e) => {
-        if (e.target === del) return;
+        if (e.target === del || e.target === edit) return;
         onSelect(entry);
+      });
+      edit.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onRename(entry);
       });
       del.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -575,6 +631,16 @@
 
       container.appendChild(chip);
     });
+  }
+
+  function renamePreset(entry) {
+    const next = prompt('Rename', entry.name);
+    if (next === null) return;
+    const trimmed = next.trim();
+    if (!trimmed) return;
+    entry.name = trimmed;
+    savePresets();
+    renderChips();
   }
 
   function renderChips() {
@@ -589,7 +655,7 @@
       if (activeMortarId === entry.id) activeMortarId = null;
       savePresets();
       renderChips();
-    });
+    }, renamePreset);
 
     renderChipRow(targetChipsEl, presets.targets, activeTargetId, (entry) => {
       bx.value = entry.x;
@@ -602,7 +668,7 @@
       if (activeTargetId === entry.id) activeTargetId = null;
       savePresets();
       renderChips();
-    });
+    }, renamePreset);
 
     clearBtn.disabled = presets.mortars.length === 0 && presets.targets.length === 0;
   }
