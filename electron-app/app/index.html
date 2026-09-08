@@ -9,9 +9,25 @@
 <link rel="stylesheet" href="fonts/fonts.css">
 <script>
   (function () {
+    var root = document.documentElement;
     try {
       var mode = localStorage.getItem('fmp-theme-mode');
-      if (mode === 'light' || mode === 'dark') document.documentElement.setAttribute('data-theme', mode);
+      if (mode === 'light' || mode === 'dark') root.setAttribute('data-theme', mode);
+    } catch (e) {}
+    try {
+      // Kept in sync with the FACTIONS object further down — avoids an accent-color flash on load.
+      var FACTIONS = {
+        blue: { light: '#235f8a', lightStrong: '#1c4d70', dark: '#6cb8e0', darkStrong: '#8ccbe8' },
+        green: { light: '#4f6b34', lightStrong: '#3e5428', dark: '#8bbf62', darkStrong: '#a3d17e' },
+        red: { light: '#a83a2e', lightStrong: '#8a2e24', dark: '#e2685c', darkStrong: '#ef8a80' },
+      };
+      var faction = FACTIONS[localStorage.getItem('mdc-team')] || FACTIONS.blue;
+      var theme = root.getAttribute('data-theme');
+      var dark = theme === 'dark' || (theme !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var accent = dark ? faction.dark : faction.light;
+      root.style.setProperty('--accent', accent);
+      root.style.setProperty('--accent-strong', dark ? faction.darkStrong : faction.lightStrong);
+      root.style.setProperty('--needle', accent);
     } catch (e) {}
   })();
 </script>
@@ -451,23 +467,28 @@
   .result-tile {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 10px 12px;
+    border-top: 3px solid var(--accent);
+    border-radius: 9px;
+    padding: 14px 12px 18px;
     text-align: center;
+    box-shadow: 0 10px 22px -18px rgba(0,0,0,0.55);
   }
   .result-tile .label {
-    font-size: 10.5px;
-    letter-spacing: 0.09em;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-muted);
   }
   .result-tile .value {
     font-family: "JetBrains Mono", monospace;
     font-variant-numeric: tabular-nums;
-    font-size: 21px;
+    font-size: clamp(28px, 7vw, 34px);
     font-weight: 700;
     color: var(--accent);
-    margin-top: 2px;
+    margin-top: 6px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
   }
   .result-tile .value small {
     font-size: 12px;
@@ -602,6 +623,7 @@
       root.setAttribute('data-theme', btn.dataset.mode);
       try { localStorage.setItem('fmp-theme-mode', btn.dataset.mode); } catch (e) {}
       setActiveButtons();
+      applyTeamAccent();
       renderChips();
     }));
   })();
@@ -654,9 +676,9 @@
 
   // Faction colors (Wardogs). TODO: swap in exact in-game hex values.
   const FACTIONS = {
-    blue: { name: 'Lonestar', light: '#235f8a', dark: '#6cb8e0' },
-    green: { name: 'Manticore', light: '#4f6b34', dark: '#8bbf62' },
-    red: { name: 'Valkyra', light: '#a83a2e', dark: '#e2685c' },
+    blue: { name: 'Lonestar', light: '#235f8a', lightStrong: '#1c4d70', dark: '#6cb8e0', darkStrong: '#8ccbe8' },
+    green: { name: 'Manticore', light: '#4f6b34', lightStrong: '#3e5428', dark: '#8bbf62', darkStrong: '#a3d17e' },
+    red: { name: 'Valkyra', light: '#a83a2e', lightStrong: '#8a2e24', dark: '#e2685c', darkStrong: '#ef8a80' },
   };
   const FACTION_ORDER = ['blue', 'green', 'red'];
   const LIGHT_TEXT = '#fff8f0';
@@ -683,6 +705,17 @@
   function nonTeamColors() {
     return FACTION_ORDER.filter((c) => c !== myTeam);
   }
+
+  function applyTeamAccent() {
+    const faction = FACTIONS[myTeam];
+    const dark = isDarkTheme();
+    const accent = dark ? faction.dark : faction.light;
+    const style = document.documentElement.style;
+    style.setProperty('--accent', accent);
+    style.setProperty('--accent-strong', dark ? faction.darkStrong : faction.lightStrong);
+    style.setProperty('--needle', accent);
+  }
+  applyTeamAccent();
 
   let activeMortarId = null;
   let activeTargetId = null;
@@ -864,6 +897,7 @@
     presets.mortars.forEach((m) => { m.color = color; });
     savePresets();
     updateTeamButtons();
+    applyTeamAccent();
     renderChips();
   }
 
