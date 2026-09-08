@@ -14,8 +14,8 @@
       // Kept in sync with the FACTIONS object further down — avoids an accent-color flash on load.
       var FACTIONS = {
         blue: { light: '#364de7', lightStrong: '#2b3eb9', dark: '#7c8bef', darkStrong: '#9da8f3' },
-        green: { light: '#36a430', lightStrong: '#2b8326', dark: '#7cc478', darkStrong: '#9dd39a' },
-        red: { light: '#cb3023', lightStrong: '#a2261c', dark: '#dd7870', darkStrong: '#e69a94' },
+        green: { light: '#36a430', lightStrong: '#2b8326', dark: '#1de212', darkStrong: '#47ea3e' },
+        red: { light: '#cb3023', lightStrong: '#a2261c', dark: '#ee3a2b', darkStrong: '#ed695e' },
       };
       var faction = FACTIONS[localStorage.getItem('mdc-team')] || FACTIONS.blue;
       var theme = root.getAttribute('data-theme');
@@ -491,6 +491,15 @@
     color: var(--ink-muted);
     margin-left: 2px;
   }
+  .result-tile .value-precise {
+    font-family: "JetBrains Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin-top: 4px;
+    min-height: 1.2em;
+  }
   .same-point {
     grid-column: 1 / -1;
     font-size: 12.5px;
@@ -588,10 +597,12 @@
       <div class="result-tile">
         <div class="label">Range</div>
         <div class="value" id="out-range">&mdash;</div>
+        <div class="value-precise" id="out-range-precise"></div>
       </div>
       <div class="result-tile">
         <div class="label">Bearing</div>
         <div class="value" id="out-bearing">&mdash;</div>
+        <div class="value-precise" id="out-bearing-precise"></div>
       </div>
       <div class="same-point" id="same-point"></div>
     </div>
@@ -643,6 +654,8 @@
   const needle = document.getElementById('needle');
   const outRange = document.getElementById('out-range');
   const outBearing = document.getElementById('out-bearing');
+  const outRangePrecise = document.getElementById('out-range-precise');
+  const outBearingPrecise = document.getElementById('out-bearing-precise');
   const samePoint = document.getElementById('same-point');
   const saveBtn = document.getElementById('save-preset');
   const clearBtn = document.getElementById('clear-presets');
@@ -670,8 +683,8 @@
   // Faction colors (Wardogs).
   const FACTIONS = {
     blue: { name: 'Lonestar', light: '#364de7', lightStrong: '#2b3eb9', dark: '#7c8bef', darkStrong: '#9da8f3' },
-    green: { name: 'Manticore', light: '#36a430', lightStrong: '#2b8326', dark: '#7cc478', darkStrong: '#9dd39a' },
-    red: { name: 'Valkyra', light: '#cb3023', lightStrong: '#a2261c', dark: '#dd7870', darkStrong: '#e69a94' },
+    green: { name: 'Manticore', light: '#36a430', lightStrong: '#2b8326', dark: '#1de212', darkStrong: '#47ea3e' },
+    red: { name: 'Valkyra', light: '#cb3023', lightStrong: '#a2261c', dark: '#ee3a2b', darkStrong: '#ed695e' },
   };
   const FACTION_ORDER = ['blue', 'green', 'red'];
   const LIGHT_TEXT = '#fff8f0';
@@ -987,6 +1000,8 @@
     if (!hasA || !hasB) {
       outRange.textContent = '—';
       outBearing.textContent = '—';
+      outRangePrecise.textContent = '';
+      outBearingPrecise.textContent = '';
       samePoint.textContent = '';
       return;
     }
@@ -996,6 +1011,8 @@
     if (dx === 0 && dy === 0) {
       outRange.textContent = '0 m';
       outBearing.textContent = '—';
+      outRangePrecise.textContent = '';
+      outBearingPrecise.textContent = '';
       samePoint.textContent = 'Gun and target share a grid position.';
       return;
     }
@@ -1004,10 +1021,13 @@
     const distance = Math.hypot(dx, dy) * METERS_PER_UNIT;
     const bearing = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
 
-    outRange.textContent = distance >= 1000
+    outRange.textContent = `${fmt(Math.round(distance), 0)} m`;
+    outBearing.textContent = `${fmt(Math.round(bearing), 0)}°`;
+
+    outRangePrecise.textContent = distance >= 1000
       ? `${fmt(distance / 1000, 2)} km`
       : `${fmt(distance, 1)} m`;
-    outBearing.textContent = `${fmt(bearing, 1)}°`;
+    outBearingPrecise.textContent = `${fmt(bearing, 1)}°`;
 
     needle.style.transform = `rotate(${bearing}deg)`;
   }
