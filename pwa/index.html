@@ -155,6 +155,63 @@
     outline-offset: 2px;
   }
 
+  .board-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 1040px;
+  }
+  .team-panel {
+    flex: none;
+    width: 168px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 1px 0 var(--border), 0 18px 40px -28px rgba(0,0,0,0.5);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .team-swatches {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .team-swatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 9px;
+    color: var(--ink-muted);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .team-swatch .swatch-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex: none;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+  .team-swatch.active {
+    border-color: var(--focus);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .team-swatch:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
   .board {
     width: 100%;
     max-width: 880px;
@@ -169,6 +226,12 @@
   }
   @media (max-width: 680px) {
     .board { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .board-row { flex-direction: column; align-items: center; }
+    .team-panel { width: 100%; max-width: 420px; }
+    .team-swatches { flex-direction: row; flex-wrap: wrap; }
+    .team-swatch { flex: 1; justify-content: center; }
   }
 
   .points {
@@ -471,7 +534,16 @@
   </div>
 </div>
 
-<div class="board">
+<div class="board-row">
+  <aside class="team-panel">
+    <span class="field-label">My Team</span>
+    <div class="team-swatches" id="team-swatches" role="group" aria-label="My team">
+      <button type="button" class="team-swatch" data-team="blue"><span class="swatch-dot" style="background:#235f8a"></span>Lonestar</button>
+      <button type="button" class="team-swatch" data-team="green"><span class="swatch-dot" style="background:#4f6b34"></span>Manticore</button>
+      <button type="button" class="team-swatch" data-team="red"><span class="swatch-dot" style="background:#a83a2e"></span>Valkyra</button>
+    </div>
+  </aside>
+  <div class="board">
   <div class="points">
     <fieldset>
       <legend class="gun"><span class="dot"></span>Point A &middot; Gun Position</legend>
@@ -533,6 +605,7 @@
       </div>
       <div class="same-point" id="same-point"></div>
     </div>
+  </div>
   </div>
 </div>
 
@@ -622,6 +695,17 @@
 
   function factionOf(entry) {
     return FACTIONS[entry.color] || FACTIONS.blue;
+  }
+
+  const TEAM_KEY = 'mdc-team';
+  let myTeam = 'blue';
+  try {
+    const savedTeam = localStorage.getItem(TEAM_KEY);
+    if (FACTIONS[savedTeam]) myTeam = savedTeam;
+  } catch (e) {}
+
+  function nonTeamColors() {
+    return FACTION_ORDER.filter((c) => c !== myTeam);
   }
 
   let activeMortarId = null;
@@ -752,9 +836,17 @@
     renderChips();
   }
 
-  function cycleColor(entry) {
+  function cycleMortarColor(entry) {
     const current = FACTION_ORDER.indexOf(entry.color);
     entry.color = FACTION_ORDER[(current + 1) % FACTION_ORDER.length];
+    savePresets();
+    renderChips();
+  }
+
+  function cycleTargetColor(entry) {
+    const order = nonTeamColors();
+    const current = order.indexOf(entry.color);
+    entry.color = order[(current + 1) % order.length];
     savePresets();
     renderChips();
   }
@@ -771,7 +863,7 @@
       if (activeMortarId === entry.id) activeMortarId = null;
       savePresets();
       renderChips();
-    }, startEdit, commitRename, cancelEdit, cycleColor);
+    }, startEdit, commitRename, cancelEdit, cycleMortarColor);
 
     renderChipRow(targetChipsEl, presets.targets, activeTargetId, editingId, (entry) => {
       bx.value = entry.x;
@@ -784,10 +876,27 @@
       if (activeTargetId === entry.id) activeTargetId = null;
       savePresets();
       renderChips();
-    }, startEdit, commitRename, cancelEdit, cycleColor);
+    }, startEdit, commitRename, cancelEdit, cycleTargetColor);
 
     updateClearBtn();
   }
+
+  function setMyTeam(color) {
+    if (!FACTIONS[color] || color === myTeam) return;
+    myTeam = color;
+    try { localStorage.setItem(TEAM_KEY, color); } catch (e) {}
+    presets.mortars.forEach((m) => { m.color = color; });
+    savePresets();
+    updateTeamButtons();
+    renderChips();
+  }
+
+  const teamButtons = document.querySelectorAll('.team-swatch');
+  function updateTeamButtons() {
+    teamButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.team === myTeam));
+  }
+  updateTeamButtons();
+  teamButtons.forEach((btn) => btn.addEventListener('click', () => setMyTeam(btn.dataset.team)));
 
   saveBtn.addEventListener('click', () => {
     const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
@@ -802,7 +911,7 @@
         activeMortarId = existing.id;
       } else {
         presets.mortarCounter += 1;
-        const entry = { id: `m${presets.mortarCounter}`, name: `Mortar ${presets.mortarCounter}`, x: x1, y: y1, color: 'blue' };
+        const entry = { id: `m${presets.mortarCounter}`, name: `Mortar ${presets.mortarCounter}`, x: x1, y: y1, color: myTeam };
         presets.mortars.push(entry);
         activeMortarId = entry.id;
       }
@@ -814,7 +923,7 @@
         activeTargetId = existing.id;
       } else {
         presets.targetCounter += 1;
-        const entry = { id: `t${presets.targetCounter}`, name: `Target ${presets.targetCounter}`, x: x2, y: y2, color: 'blue' };
+        const entry = { id: `t${presets.targetCounter}`, name: `Target ${presets.targetCounter}`, x: x2, y: y2, color: nonTeamColors()[0] };
         presets.targets.push(entry);
         activeTargetId = entry.id;
       }
