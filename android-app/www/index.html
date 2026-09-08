@@ -17,9 +17,9 @@
     try {
       // Kept in sync with the FACTIONS object further down — avoids an accent-color flash on load.
       var FACTIONS = {
-        blue: { light: '#364de7', lightStrong: '#2b3eb9', dark: '#5268ff', darkStrong: '#8897fc' },
-        green: { light: '#36a430', lightStrong: '#2b8326', dark: '#1de212', darkStrong: '#47ea3e' },
-        red: { light: '#cb3023', lightStrong: '#a2261c', dark: '#ee3a2b', darkStrong: '#ed695e' },
+        blue: { light: '#364de7', lightStrong: '#2b3eb9', dark: '#667aff', darkStrong: '#93a1fb' },
+        green: { light: '#36a430', lightStrong: '#2b8326', dark: '#26c91d', darkStrong: '#44dd3c' },
+        red: { light: '#cb3023', lightStrong: '#a2261c', dark: '#c52d20', darkStrong: '#d83e31' },
       };
       var faction = FACTIONS[localStorage.getItem('mdc-team')] || FACTIONS.blue;
       var theme = root.getAttribute('data-theme');
@@ -28,6 +28,17 @@
       root.style.setProperty('--accent', accent);
       root.style.setProperty('--accent-strong', dark ? faction.darkStrong : faction.lightStrong);
       root.style.setProperty('--needle', accent);
+      // Whichever of near-black/near-white text actually contrasts against this accent hex.
+      var DARK_TEXT_LUM = 0.0150, LIGHT_TEXT_LUM = 0.9469;
+      var n = parseInt(accent.slice(1), 16);
+      var lin = [(n>>16)&255,(n>>8)&255,n&255].map(function (v) {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      var accentLum = 0.2126*lin[0] + 0.7152*lin[1] + 0.0722*lin[2];
+      var cDark = (accentLum + 0.05) / (DARK_TEXT_LUM + 0.05);
+      var cLight = (LIGHT_TEXT_LUM + 0.05) / (accentLum + 0.05);
+      root.style.setProperty('--accent-contrast', cDark >= cLight ? '#0d2330' : '#fff8f0');
     } catch (e) {}
   })();
 </script>
@@ -58,10 +69,10 @@
       --border: rgba(210,230,222,0.16);
       --ink: #dfeee7;
       --ink-muted: #8ea89d;
-      --accent: #5268ff;
-      --accent-strong: #8897fc;
+      --accent: #667aff;
+      --accent-strong: #93a1fb;
       --accent-contrast: #0d2330;
-      --needle: #5268ff;
+      --needle: #667aff;
       --danger: #e08484;
       --focus: #6fc3d9;
     }
@@ -75,10 +86,10 @@
     --border: rgba(210,230,222,0.16);
     --ink: #dfeee7;
     --ink-muted: #8ea89d;
-    --accent: #5268ff;
-    --accent-strong: #8897fc;
+    --accent: #667aff;
+    --accent-strong: #93a1fb;
     --accent-contrast: #0d2330;
-    --needle: #5268ff;
+    --needle: #667aff;
     --danger: #e08484;
     --focus: #6fc3d9;
   }
@@ -690,13 +701,31 @@
 
   // Faction colors (Wardogs).
   const FACTIONS = {
-    blue: { name: 'Lonestar', light: '#364de7', lightStrong: '#2b3eb9', dark: '#5268ff', darkStrong: '#8897fc' },
-    green: { name: 'Manticore', light: '#36a430', lightStrong: '#2b8326', dark: '#1de212', darkStrong: '#47ea3e' },
-    red: { name: 'Valkyra', light: '#cb3023', lightStrong: '#a2261c', dark: '#ee3a2b', darkStrong: '#ed695e' },
+    blue: { name: 'Lonestar', light: '#364de7', lightStrong: '#2b3eb9', dark: '#667aff', darkStrong: '#93a1fb' },
+    green: { name: 'Manticore', light: '#36a430', lightStrong: '#2b8326', dark: '#26c91d', darkStrong: '#44dd3c' },
+    red: { name: 'Valkyra', light: '#cb3023', lightStrong: '#a2261c', dark: '#c52d20', darkStrong: '#d83e31' },
   };
   const FACTION_ORDER = ['blue', 'green', 'red'];
   const LIGHT_TEXT = '#fff8f0';
   const DARK_TEXT = '#0d2330';
+  const DARK_TEXT_LUM = 0.0150;
+  const LIGHT_TEXT_LUM = 0.9469;
+
+  function relLuminance(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2];
+  }
+
+  function bestTextFor(hex) {
+    const lum = relLuminance(hex);
+    const contrastDark = (lum + 0.05) / (DARK_TEXT_LUM + 0.05);
+    const contrastLight = (LIGHT_TEXT_LUM + 0.05) / (lum + 0.05);
+    return contrastDark >= contrastLight ? DARK_TEXT : LIGHT_TEXT;
+  }
 
   function isDarkTheme() {
     const theme = document.documentElement.getAttribute('data-theme');
@@ -727,6 +756,7 @@
     const style = document.documentElement.style;
     style.setProperty('--accent', accent);
     style.setProperty('--accent-strong', dark ? faction.darkStrong : faction.lightStrong);
+    style.setProperty('--accent-contrast', bestTextFor(accent));
     style.setProperty('--needle', accent);
   }
   applyTeamAccent();
