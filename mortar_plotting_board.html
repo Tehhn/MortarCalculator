@@ -13,9 +13,9 @@
     try {
       // Kept in sync with the FACTIONS object further down — avoids an accent-color flash on load.
       var FACTIONS = {
-        blue: { light: '#235f8a', lightStrong: '#1c4d70', dark: '#6cb8e0', darkStrong: '#8ccbe8' },
-        green: { light: '#4f6b34', lightStrong: '#3e5428', dark: '#8bbf62', darkStrong: '#a3d17e' },
-        red: { light: '#a83a2e', lightStrong: '#8a2e24', dark: '#e2685c', darkStrong: '#ef8a80' },
+        blue: { light: '#0042d0', lightStrong: '#0035a6', dark: '#5984e0', darkStrong: '#83a3e8' },
+        green: { light: '#068100', lightStrong: '#056700', dark: '#5dad59', darkStrong: '#86c283' },
+        red: { light: '#d66969', lightStrong: '#ab5454', dark: '#e49e9e', darkStrong: '#ebb6b6' },
       };
       var faction = FACTIONS[localStorage.getItem('mdc-team')] || FACTIONS.blue;
       var theme = root.getAttribute('data-theme');
@@ -37,10 +37,10 @@
     --border: rgba(28,43,58,0.18);
     --ink: #1c2b3a;
     --ink-muted: #56666e;
-    --accent: #235f8a;
-    --accent-strong: #1c4d70;
+    --accent: #0042d0;
+    --accent-strong: #0035a6;
     --accent-contrast: #fff8f0;
-    --needle: #235f8a;
+    --needle: #0042d0;
     --danger: #9a2f2f;
     --focus: #2f6f8f;
   }
@@ -54,10 +54,10 @@
       --border: rgba(210,230,222,0.16);
       --ink: #dfeee7;
       --ink-muted: #8ea89d;
-      --accent: #6cb8e0;
-      --accent-strong: #8ccbe8;
+      --accent: #5984e0;
+      --accent-strong: #83a3e8;
       --accent-contrast: #0d2330;
-      --needle: #6cb8e0;
+      --needle: #5984e0;
       --danger: #e08484;
       --focus: #6fc3d9;
     }
@@ -71,10 +71,10 @@
     --border: rgba(210,230,222,0.16);
     --ink: #dfeee7;
     --ink-muted: #8ea89d;
-    --accent: #6cb8e0;
-    --accent-strong: #8ccbe8;
+    --accent: #5984e0;
+    --accent-strong: #83a3e8;
     --accent-contrast: #0d2330;
-    --needle: #6cb8e0;
+    --needle: #5984e0;
     --danger: #e08484;
     --focus: #6fc3d9;
   }
@@ -528,9 +528,9 @@
   <aside class="team-panel">
     <span class="field-label">My Team</span>
     <div class="team-swatches" id="team-swatches" role="group" aria-label="My team">
-      <button type="button" class="team-swatch" data-team="blue"><span class="swatch-dot" style="background:#235f8a"></span>Lonestar</button>
-      <button type="button" class="team-swatch" data-team="green"><span class="swatch-dot" style="background:#4f6b34"></span>Manticore</button>
-      <button type="button" class="team-swatch" data-team="red"><span class="swatch-dot" style="background:#a83a2e"></span>Valkyra</button>
+      <button type="button" class="team-swatch" data-team="blue"><span class="swatch-dot" style="background:#0042d0"></span>Lonestar</button>
+      <button type="button" class="team-swatch" data-team="green"><span class="swatch-dot" style="background:#068100"></span>Manticore</button>
+      <button type="button" class="team-swatch" data-team="red"><span class="swatch-dot" style="background:#d66969"></span>Valkyra</button>
     </div>
   </aside>
   <div class="board">
@@ -667,11 +667,11 @@
     return list.find((entry) => entry.x === x && entry.y === y);
   }
 
-  // Faction colors (Wardogs). TODO: swap in exact in-game hex values.
+  // Faction colors (Wardogs).
   const FACTIONS = {
-    blue: { name: 'Lonestar', light: '#235f8a', lightStrong: '#1c4d70', dark: '#6cb8e0', darkStrong: '#8ccbe8' },
-    green: { name: 'Manticore', light: '#4f6b34', lightStrong: '#3e5428', dark: '#8bbf62', darkStrong: '#a3d17e' },
-    red: { name: 'Valkyra', light: '#a83a2e', lightStrong: '#8a2e24', dark: '#e2685c', darkStrong: '#ef8a80' },
+    blue: { name: 'Lonestar', light: '#0042d0', lightStrong: '#0035a6', dark: '#5984e0', darkStrong: '#83a3e8' },
+    green: { name: 'Manticore', light: '#068100', lightStrong: '#056700', dark: '#5dad59', darkStrong: '#86c283' },
+    red: { name: 'Valkyra', light: '#d66969', lightStrong: '#ab5454', dark: '#e49e9e', darkStrong: '#ebb6b6' },
   };
   const FACTION_ORDER = ['blue', 'green', 'red'];
   const LIGHT_TEXT = '#fff8f0';
