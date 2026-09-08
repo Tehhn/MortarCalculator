@@ -515,16 +515,22 @@
   const targetChipsEl = document.getElementById('target-chips');
 
   const PRESETS_KEY = 'mdc-presets';
-  let presets = { counter: 0, mortars: [], targets: [] };
+  let presets = { mortarCounter: 0, targetCounter: 0, mortars: [], targets: [] };
   try {
     const raw = localStorage.getItem(PRESETS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      presets.counter = parsed.counter || 0;
+      const legacyCounter = parsed.counter || 0;
+      presets.mortarCounter = parsed.mortarCounter || legacyCounter;
+      presets.targetCounter = parsed.targetCounter || legacyCounter;
       presets.mortars = Array.isArray(parsed.mortars) ? parsed.mortars : [];
       presets.targets = Array.isArray(parsed.targets) ? parsed.targets : [];
     }
   } catch (e) {}
+
+  function findByCoords(list, x, y) {
+    return list.find((entry) => entry.x === x && entry.y === y);
+  }
 
   let activeMortarId = null;
   let activeTargetId = null;
@@ -597,16 +603,34 @@
   saveBtn.addEventListener('click', () => {
     const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
     const x2 = parseFloat(bx.value), y2 = parseFloat(by.value);
-    if ([x1, y1, x2, y2].some(Number.isNaN)) return;
+    const hasA = !Number.isNaN(x1) && !Number.isNaN(y1);
+    const hasB = !Number.isNaN(x2) && !Number.isNaN(y2);
+    if (!hasA && !hasB) return;
 
-    presets.counter += 1;
-    const n = presets.counter;
-    const mortarEntry = { id: `m${n}`, name: `Mortar ${n}`, x: x1, y: y1 };
-    const targetEntry = { id: `t${n}`, name: `Target ${n}`, x: x2, y: y2 };
-    presets.mortars.push(mortarEntry);
-    presets.targets.push(targetEntry);
-    activeMortarId = mortarEntry.id;
-    activeTargetId = targetEntry.id;
+    if (hasA) {
+      const existing = findByCoords(presets.mortars, x1, y1);
+      if (existing) {
+        activeMortarId = existing.id;
+      } else {
+        presets.mortarCounter += 1;
+        const entry = { id: `m${presets.mortarCounter}`, name: `Mortar ${presets.mortarCounter}`, x: x1, y: y1 };
+        presets.mortars.push(entry);
+        activeMortarId = entry.id;
+      }
+    }
+
+    if (hasB) {
+      const existing = findByCoords(presets.targets, x2, y2);
+      if (existing) {
+        activeTargetId = existing.id;
+      } else {
+        presets.targetCounter += 1;
+        const entry = { id: `t${presets.targetCounter}`, name: `Target ${presets.targetCounter}`, x: x2, y: y2 };
+        presets.targets.push(entry);
+        activeTargetId = entry.id;
+      }
+    }
+
     savePresets();
     renderChips();
   });
@@ -614,7 +638,7 @@
   clearBtn.addEventListener('click', () => {
     if (presets.mortars.length === 0 && presets.targets.length === 0) return;
     if (!confirm('Clear all saved mortars and targets?')) return;
-    presets = { counter: 0, mortars: [], targets: [] };
+    presets = { mortarCounter: 0, targetCounter: 0, mortars: [], targets: [] };
     activeMortarId = null;
     activeTargetId = null;
     try { localStorage.removeItem(PRESETS_KEY); } catch (e) {}
@@ -631,10 +655,12 @@
   function recalc() {
     const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
     const x2 = parseFloat(bx.value), y2 = parseFloat(by.value);
+    const hasA = !Number.isNaN(x1) && !Number.isNaN(y1);
+    const hasB = !Number.isNaN(x2) && !Number.isNaN(y2);
 
-    saveBtn.disabled = [x1, y1, x2, y2].some(Number.isNaN);
+    saveBtn.disabled = !hasA && !hasB;
 
-    if ([x1, y1, x2, y2].some(Number.isNaN)) {
+    if (!hasA || !hasB) {
       outRange.textContent = '—';
       outBearing.textContent = '—';
       samePoint.textContent = '';
