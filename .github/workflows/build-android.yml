@@ -1,0 +1,35 @@
+name: Build Fire Mission Plotter Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ["android-app/**"]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: android-actions/setup-android@v3
+      - run: npm install
+      - run: npx cap sync android
+      - name: Build debug APK
+        working-directory: android-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FireMissionPlotter-android
+          path: android-app/android/app/build/outputs/apk/debug/*.apk
