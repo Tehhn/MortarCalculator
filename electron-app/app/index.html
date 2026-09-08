@@ -236,18 +236,19 @@
     padding: 20px 16px;
   }
 
-  .rose-wrap { position: relative; width: 160px; height: 160px; }
-  svg.rose { width: 160px; height: 160px; display: block; }
+  .rose-wrap { position: relative; width: 190px; height: 190px; }
+  svg.rose { width: 190px; height: 190px; display: block; }
   .rose text {
     font-family: "JetBrains Mono", monospace;
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 700;
     fill: var(--ink-muted);
   }
   .rose .ring { fill: none; stroke: var(--border); stroke-width: 1.5; }
   .rose .tick { stroke: var(--border); stroke-width: 1.5; }
   .rose .tick.major { stroke: var(--ink-muted); stroke-width: 2; }
   #needle {
-    transform-origin: 80px 80px;
+    transform-origin: 95px 95px;
     transition: transform 0.35s cubic-bezier(.3,1.4,.4,1);
   }
   #needle .shaft { stroke: var(--needle); stroke-width: 3; stroke-linecap: round; }
@@ -342,18 +343,18 @@
 
   <div class="readout">
     <div class="rose-wrap">
-      <svg class="rose" viewBox="0 0 160 160">
-        <circle class="ring" cx="80" cy="80" r="70"></circle>
+      <svg class="rose" viewBox="0 0 190 190">
+        <circle class="ring" cx="95" cy="95" r="64"></circle>
         <g id="ticks"></g>
-        <text x="80" y="16" text-anchor="middle">N</text>
-        <text x="148" y="84" text-anchor="middle">E</text>
-        <text x="80" y="150" text-anchor="middle">S</text>
-        <text x="12" y="84" text-anchor="middle">W</text>
+        <text x="95" y="16" text-anchor="middle">N</text>
+        <text x="175" y="99" text-anchor="middle">E</text>
+        <text x="95" y="179" text-anchor="middle">S</text>
+        <text x="15" y="99" text-anchor="middle">W</text>
         <g id="needle">
-          <line class="shaft" x1="80" y1="80" x2="80" y2="20"></line>
-          <polygon class="head" points="80,14 74,26 86,26"></polygon>
+          <line class="shaft" x1="95" y1="95" x2="95" y2="49"></line>
+          <polygon class="head" points="95,43 89,55 101,55"></polygon>
         </g>
-        <circle class="hub" cx="80" cy="80" r="5"></circle>
+        <circle class="hub" cx="95" cy="95" r="5"></circle>
       </svg>
     </div>
     <div class="results">
@@ -402,9 +403,9 @@
   for (let deg = 0; deg < 360; deg += 15) {
     const major = deg % 90 === 0;
     const rad = (deg - 90) * Math.PI / 180;
-    const outer = 70, inner = major ? 60 : 64;
-    const x1 = 80 + outer * Math.cos(rad), y1 = 80 + outer * Math.sin(rad);
-    const x2 = 80 + inner * Math.cos(rad), y2 = 80 + inner * Math.sin(rad);
+    const outer = 64, inner = major ? 54 : 58;
+    const x1 = 95 + outer * Math.cos(rad), y1 = 95 + outer * Math.sin(rad);
+    const x2 = 95 + inner * Math.cos(rad), y2 = 95 + inner * Math.sin(rad);
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('x1', x1); line.setAttribute('y1', y1);
     line.setAttribute('x2', x2); line.setAttribute('y2', y2);
