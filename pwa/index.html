@@ -337,7 +337,7 @@
 <div class="masthead">
   <p class="eyebrow">Wardogs &middot; L81 Mortar</p>
   <h1>MORTAR DISTANCE CALCULATOR</h1>
-  <p>Enter the L81's grid position and the target's grid position to get its firing distance and bearing in Wardogs.</p>
+  <p>Enter the L81's grid position and the target's grid position.</p>
   <p><button id="install-btn" type="button">&#8681; Install app</button></p>
   <div class="controls">
     <div class="seg" role="group" aria-label="Theme">
@@ -390,20 +390,12 @@
         <div class="label">Bearing</div>
         <div class="value" id="out-bearing">&mdash;</div>
       </div>
-      <div class="result-tile">
-        <div class="label">Grid &Delta;</div>
-        <div class="value" id="out-delta" style="font-size:15px; color:var(--ink);">&mdash;</div>
-      </div>
-      <div class="result-tile">
-        <div class="label">Mils</div>
-        <div class="value" id="out-mils">&mdash;</div>
-      </div>
       <div class="same-point" id="same-point"></div>
     </div>
   </div>
 </div>
 
-<footer>1 circle = 640 mils &middot; bearing measured clockwise from grid north</footer>
+<footer>Bearing measured clockwise from grid north</footer>
 
 <script>
   (function () {
@@ -445,8 +437,6 @@
   const needle = document.getElementById('needle');
   const outRange = document.getElementById('out-range');
   const outBearing = document.getElementById('out-bearing');
-  const outDelta = document.getElementById('out-delta');
-  const outMils = document.getElementById('out-mils');
   const samePoint = document.getElementById('same-point');
 
   function fmt(n, digits) {
@@ -460,19 +450,15 @@
     if ([x1, y1, x2, y2].some(Number.isNaN)) {
       outRange.textContent = '—';
       outBearing.textContent = '—';
-      outMils.textContent = '—';
-      outDelta.textContent = '—';
       samePoint.textContent = '';
       return;
     }
 
     const dx = x2 - x1, dy = y2 - y1;
-    outDelta.textContent = `${dx >= 0 ? '+' : ''}${fmt(dx,2)}, ${dy >= 0 ? '+' : ''}${fmt(dy,2)}`;
 
     if (dx === 0 && dy === 0) {
       outRange.textContent = '0 m';
       outBearing.textContent = '—';
-      outMils.textContent = '—';
       samePoint.textContent = 'Gun and target share a grid position.';
       return;
     }
@@ -480,13 +466,11 @@
 
     const distance = Math.hypot(dx, dy) * METERS_PER_UNIT;
     const bearing = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
-    const mils = bearing * (640 / 360);
 
     outRange.textContent = distance >= 1000
       ? `${fmt(distance / 1000, 2)} km`
       : `${fmt(distance, 1)} m`;
     outBearing.textContent = `${fmt(bearing, 1)}°`;
-    outMils.textContent = fmt(mils, 0);
 
     needle.style.transform = `rotate(${bearing}deg)`;
   }
