@@ -219,6 +219,93 @@
     outline: 2px solid var(--focus);
     outline-offset: 1px;
   }
+
+  .presets {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .presets-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .save-btn, .clear-btn {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .save-btn {
+    flex: 1;
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border: 1px solid var(--accent);
+  }
+  .save-btn:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+  .save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .clear-btn {
+    background: var(--surface-2);
+    color: var(--danger);
+    border: 1px solid var(--border);
+  }
+  .clear-btn:hover { background: var(--surface); }
+  .clear-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .field-label {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 28px;
+  }
+  .chip-row:empty::before {
+    content: 'None saved yet';
+    font-size: 11.5px;
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 5px 5px 10px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .chip.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+  }
+  .chip .chip-del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--ink-muted);
+  }
+  .chip .chip-del:hover { background: var(--border); color: var(--danger); }
+  .chip.active .chip-del { color: var(--accent-contrast); }
+  .chip.active .chip-del:hover { background: rgba(0,0,0,0.15); color: var(--danger); }
+
   .readout {
     display: flex;
     flex-direction: column;
@@ -332,6 +419,21 @@
         <label class="field"><span>Y (north/south)</span><input type="number" id="by" placeholder="0.00" step="0.01"></label>
       </div>
     </fieldset>
+
+    <div class="presets">
+      <div class="presets-actions">
+        <button type="button" class="save-btn" id="save-preset">+ Save Points</button>
+        <button type="button" class="clear-btn" id="clear-presets">Clear All</button>
+      </div>
+      <div>
+        <span class="field-label">Saved Mortars</span>
+        <div class="chip-row" id="mortar-chips"></div>
+      </div>
+      <div>
+        <span class="field-label">Saved Targets</span>
+        <div class="chip-row" id="target-chips"></div>
+      </div>
+    </div>
   </div>
 
   <div class="readout">
@@ -407,6 +509,120 @@
   const outRange = document.getElementById('out-range');
   const outBearing = document.getElementById('out-bearing');
   const samePoint = document.getElementById('same-point');
+  const saveBtn = document.getElementById('save-preset');
+  const clearBtn = document.getElementById('clear-presets');
+  const mortarChipsEl = document.getElementById('mortar-chips');
+  const targetChipsEl = document.getElementById('target-chips');
+
+  const PRESETS_KEY = 'mdc-presets';
+  let presets = { counter: 0, mortars: [], targets: [] };
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      presets.counter = parsed.counter || 0;
+      presets.mortars = Array.isArray(parsed.mortars) ? parsed.mortars : [];
+      presets.targets = Array.isArray(parsed.targets) ? parsed.targets : [];
+    }
+  } catch (e) {}
+
+  let activeMortarId = null;
+  let activeTargetId = null;
+
+  function savePresets() {
+    try { localStorage.setItem(PRESETS_KEY, JSON.stringify(presets)); } catch (e) {}
+  }
+
+  function renderChipRow(container, list, activeId, onSelect, onDelete) {
+    container.innerHTML = '';
+    list.forEach((entry) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip' + (entry.id === activeId ? ' active' : '');
+      chip.title = `X ${entry.x}, Y ${entry.y}`;
+
+      const label = document.createElement('span');
+      label.textContent = entry.name;
+      chip.appendChild(label);
+
+      const del = document.createElement('span');
+      del.className = 'chip-del';
+      del.textContent = '×';
+      del.setAttribute('aria-label', `Delete ${entry.name}`);
+      chip.appendChild(del);
+
+      chip.addEventListener('click', (e) => {
+        if (e.target === del) return;
+        onSelect(entry);
+      });
+      del.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onDelete(entry);
+      });
+
+      container.appendChild(chip);
+    });
+  }
+
+  function renderChips() {
+    renderChipRow(mortarChipsEl, presets.mortars, activeMortarId, (entry) => {
+      ax.value = entry.x;
+      ay.value = entry.y;
+      activeMortarId = entry.id;
+      renderChips();
+      recalc();
+    }, (entry) => {
+      presets.mortars = presets.mortars.filter((m) => m.id !== entry.id);
+      if (activeMortarId === entry.id) activeMortarId = null;
+      savePresets();
+      renderChips();
+    });
+
+    renderChipRow(targetChipsEl, presets.targets, activeTargetId, (entry) => {
+      bx.value = entry.x;
+      by.value = entry.y;
+      activeTargetId = entry.id;
+      renderChips();
+      recalc();
+    }, (entry) => {
+      presets.targets = presets.targets.filter((t) => t.id !== entry.id);
+      if (activeTargetId === entry.id) activeTargetId = null;
+      savePresets();
+      renderChips();
+    });
+
+    clearBtn.disabled = presets.mortars.length === 0 && presets.targets.length === 0;
+  }
+
+  saveBtn.addEventListener('click', () => {
+    const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
+    const x2 = parseFloat(bx.value), y2 = parseFloat(by.value);
+    if ([x1, y1, x2, y2].some(Number.isNaN)) return;
+
+    presets.counter += 1;
+    const n = presets.counter;
+    const mortarEntry = { id: `m${n}`, name: `Mortar ${n}`, x: x1, y: y1 };
+    const targetEntry = { id: `t${n}`, name: `Target ${n}`, x: x2, y: y2 };
+    presets.mortars.push(mortarEntry);
+    presets.targets.push(targetEntry);
+    activeMortarId = mortarEntry.id;
+    activeTargetId = targetEntry.id;
+    savePresets();
+    renderChips();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    if (presets.mortars.length === 0 && presets.targets.length === 0) return;
+    if (!confirm('Clear all saved mortars and targets?')) return;
+    presets = { counter: 0, mortars: [], targets: [] };
+    activeMortarId = null;
+    activeTargetId = null;
+    try { localStorage.removeItem(PRESETS_KEY); } catch (e) {}
+    renderChips();
+  });
+
+  [ax, ay].forEach((el) => el.addEventListener('input', () => { activeMortarId = null; renderChips(); }));
+  [bx, by].forEach((el) => el.addEventListener('input', () => { activeTargetId = null; renderChips(); }));
 
   function fmt(n, digits) {
     return n.toLocaleString(undefined, { maximumFractionDigits: digits, minimumFractionDigits: 0 });
@@ -415,6 +631,8 @@
   function recalc() {
     const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
     const x2 = parseFloat(bx.value), y2 = parseFloat(by.value);
+
+    saveBtn.disabled = [x1, y1, x2, y2].some(Number.isNaN);
 
     if ([x1, y1, x2, y2].some(Number.isNaN)) {
       outRange.textContent = '—';
@@ -446,4 +664,5 @@
 
   [ax, ay, bx, by].forEach(el => el.addEventListener('input', recalc));
   recalc();
+  renderChips();
 </script>
