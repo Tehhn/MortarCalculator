@@ -1,4 +1,4 @@
-name: Build Fire Mission Plotter Android APK
+name: Build Mortar Distance Calculator Android APK
 
 on:
   push:
@@ -31,5 +31,5 @@ jobs:
           ./gradlew assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: FireMissionPlotter-android
+          name: MortarDistanceCalculator-android
           path: android-app/android/app/build/outputs/apk/debug/*.apk

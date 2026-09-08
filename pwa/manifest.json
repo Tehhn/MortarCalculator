@@ -1,7 +1,7 @@
 {
-  "name": "Fire Mission Plotter",
-  "short_name": "FM Plotter",
-  "description": "Range and bearing calculator for mortar fire missions on a grid map.",
+  "name": "Mortar Distance Calculator",
+  "short_name": "Mortar Calc",
+  "description": "Distance and bearing calculator for the L81 Mortar in Wardogs.",
   "id": "fire-mission-plotter",
   "start_url": "./index.html",
   "scope": "./",

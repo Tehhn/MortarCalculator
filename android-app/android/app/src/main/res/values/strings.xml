@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Fire Mission Plotter</string>
-    <string name="title_activity_main">Fire Mission Plotter</string>
+    <string name="app_name">Mortar Distance Calculator</string>
+    <string name="title_activity_main">Mortar Distance Calculator</string>
     <string name="package_name">com.tehhn.firemissionplotter</string>
     <string name="custom_url_scheme">com.tehhn.firemissionplotter</string>
 </resources>

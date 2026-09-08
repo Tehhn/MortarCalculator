@@ -1,8 +1,9 @@
-# Fire Mission Plotter — installable app
+# Mortar Distance Calculator — installable app
 
-This folder is a self-contained Progressive Web App (PWA): the same mortar
-range/bearing calculator, packaged with a manifest and offline service
-worker so it installs as a real app icon on desktop and mobile.
+This folder is a self-contained Progressive Web App (PWA): the same L81
+Mortar distance/bearing calculator for Wardogs, packaged with a manifest
+and offline service worker so it installs as a real app icon on desktop
+and mobile.
 
 ## 1. Host it (one-time)
 

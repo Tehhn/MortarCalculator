@@ -1,8 +1,8 @@
 {
   "name": "fire-mission-plotter",
-  "productName": "Fire Mission Plotter",
+  "productName": "Mortar Distance Calculator",
   "version": "1.0.0",
-  "description": "Range and bearing calculator for mortar fire missions on a grid map.",
+  "description": "Distance and bearing calculator for the L81 Mortar in Wardogs.",
   "private": true,
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "com.tehhn.firemissionplotter",
-    "productName": "Fire Mission Plotter",
+    "productName": "Mortar Distance Calculator",
     "directories": {
       "output": "dist"
     },

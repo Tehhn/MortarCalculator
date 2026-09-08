@@ -1,4 +1,4 @@
-name: Build Fire Mission Plotter Desktop App
+name: Build Mortar Distance Calculator Desktop App
 
 on:
   push:
@@ -21,5 +21,5 @@ jobs:
       - run: npx electron-builder --win zip --x64
       - uses: actions/upload-artifact@v4
         with:
-          name: FireMissionPlotter-windows
+          name: MortarDistanceCalculator-windows
           path: electron-app/dist/*.zip

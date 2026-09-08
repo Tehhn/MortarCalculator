@@ -1,4 +1,4 @@
-name: Deploy Fire Mission Plotter PWA
+name: Deploy Mortar Distance Calculator PWA
 
 on:
   push:

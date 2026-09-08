@@ -1,4 +1,4 @@
-# Fire Mission Plotter — Android app
+# Mortar Distance Calculator — Android app
 
 A native Android build of the calculator (via Capacitor): a real app icon,
 runs full-screen with no browser UI, works offline.
@@ -9,10 +9,11 @@ This repo builds it for you on GitHub Actions, since the Android SDK and
 Gradle need real internet access to Google's Maven repo:
 
 1. On GitHub, open the **Actions** tab.
-2. Select **"Build Fire Mission Plotter Android APK"**.
+2. Select **"Build Mortar Distance Calculator Android APK"**.
 3. Click **Run workflow** (pick the branch with this folder).
-4. When it finishes, open the run and download the `FireMissionPlotter-android`
-   artifact — unzip it to get `app-debug.apk`.
+4. When it finishes, open the run and download the
+   `MortarDistanceCalculator-android` artifact — unzip it to get
+   `app-debug.apk`.
 
 ## Install it on your phone
 
