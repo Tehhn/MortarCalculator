@@ -1,0 +1,17 @@
+{
+  "name": "Fire Mission Plotter",
+  "short_name": "FM Plotter",
+  "description": "Range and bearing calculator for mortar fire missions on a grid map.",
+  "id": "fire-mission-plotter",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e1a1c",
+  "theme_color": "#0e1a1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

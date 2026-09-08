@@ -1,0 +1,36 @@
+{
+  "name": "fire-mission-plotter",
+  "productName": "Fire Mission Plotter",
+  "version": "1.0.0",
+  "description": "Range and bearing calculator for mortar fire missions on a grid map.",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win portable --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.tehhn.firemissionplotter",
+    "productName": "Fire Mission Plotter",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "app/**/*"
+    ],
+    "win": {
+      "target": [
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "FireMissionPlotter-portable.exe"
+    }
+  }
+}
