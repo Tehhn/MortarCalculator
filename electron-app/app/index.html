@@ -12,10 +12,7 @@
     try {
       var mode = localStorage.getItem('fmp-theme-mode');
       if (mode === 'light' || mode === 'dark') document.documentElement.setAttribute('data-theme', mode);
-      document.documentElement.setAttribute('data-accent', localStorage.getItem('fmp-accent') || 'amber');
-    } catch (e) {
-      document.documentElement.setAttribute('data-accent', 'amber');
-    }
+    } catch (e) {}
   })();
 </script>
 <style>
@@ -52,13 +49,7 @@
       --danger: #e08484;
       --focus: #6fc3d9;
     }
-    :root:not([data-theme="light"])[data-accent="red"] { --accent: #e2685c; --accent-strong: #ef8a80; --needle: #e2685c; }
-    :root:not([data-theme="light"])[data-accent="green"] { --accent: #8bbf62; --accent-strong: #a3d17e; --needle: #8bbf62; }
-    :root:not([data-theme="light"])[data-accent="blue"] { --accent: #6cc3e0; --accent-strong: #8ed4ec; --needle: #6cc3e0; }
   }
-  :root[data-accent="red"] { --accent: #a83a2e; --accent-strong: #8a2e24; --needle: #a83a2e; }
-  :root[data-accent="green"] { --accent: #4f6b34; --accent-strong: #3e5428; --needle: #4f6b34; }
-  :root[data-accent="blue"] { --accent: #2f6f8f; --accent-strong: #255a73; --needle: #2f6f8f; }
   :root[data-theme="dark"] {
     --bg: #0e1a1c;
     --bg-grid: rgba(210,230,222,0.07);
@@ -75,9 +66,6 @@
     --danger: #e08484;
     --focus: #6fc3d9;
   }
-  :root[data-theme="dark"][data-accent="red"] { --accent: #e2685c; --accent-strong: #ef8a80; --needle: #e2685c; }
-  :root[data-theme="dark"][data-accent="green"] { --accent: #8bbf62; --accent-strong: #a3d17e; --needle: #8bbf62; }
-  :root[data-theme="dark"][data-accent="blue"] { --accent: #6cc3e0; --accent-strong: #8ed4ec; --needle: #6cc3e0; }
 
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -155,25 +143,7 @@
   }
   .seg-btn + .seg-btn { border-left: 1px solid var(--border); }
   .seg-btn.active { background: var(--accent); color: var(--accent-contrast); }
-  .swatches {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .swatch {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    background: var(--sw);
-    padding: 0;
-    cursor: pointer;
-  }
-  .swatch.active {
-    border-color: var(--ink);
-    box-shadow: 0 0 0 2px var(--surface);
-  }
-  .seg-btn:focus-visible, .swatch:focus-visible {
+  .seg-btn:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
@@ -254,19 +224,6 @@
     outline: 2px solid var(--focus);
     outline-offset: 1px;
   }
-  .scale-note {
-    font-size: 12px;
-    color: var(--ink-muted);
-    margin-top: 2px;
-  }
-  .scale-note code {
-    font-family: "JetBrains Mono", monospace;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 1px 5px;
-  }
-
   .readout {
     display: flex;
     flex-direction: column;
@@ -359,15 +316,8 @@
   <p>Enter the gun's grid position and the target's grid position. The board returns range and compass bearing for the shot.</p>
   <div class="controls">
     <div class="seg" role="group" aria-label="Theme">
-      <button type="button" class="seg-btn" data-mode="auto">Auto</button>
       <button type="button" class="seg-btn" data-mode="light">Light</button>
       <button type="button" class="seg-btn" data-mode="dark">Dark</button>
-    </div>
-    <div class="swatches" role="group" aria-label="Accent color">
-      <button type="button" class="swatch" data-accent="amber" style="--sw:#c9701c" aria-label="Amber" title="Amber"></button>
-      <button type="button" class="swatch" data-accent="red" style="--sw:#c1453a" aria-label="Night Vision Red" title="Night Vision Red"></button>
-      <button type="button" class="swatch" data-accent="green" style="--sw:#5c7d3f" aria-label="Field Olive" title="Field Olive"></button>
-      <button type="button" class="swatch" data-accent="blue" style="--sw:#3a83a6" aria-label="Recon Blue" title="Recon Blue"></button>
     </div>
   </div>
 </div>
@@ -388,7 +338,6 @@
         <label class="field"><span>Y (north/south)</span><input type="number" id="by" placeholder="0.00" step="0.01" inputmode="decimal"></label>
       </div>
     </fieldset>
-    <p class="scale-note">Grid scale: one grid unit = <code>100 m</code>. E.g. (100, 0) &rarr; (101, 0) is 100 m. North is +Y, east is +X.</p>
   </div>
 
   <div class="readout">
@@ -429,32 +378,22 @@
   </div>
 </div>
 
-<footer>1 circle = 6400 mils &middot; bearing measured clockwise from grid north</footer>
+<footer>1 circle = 640 mils &middot; bearing measured clockwise from grid north</footer>
 
 <script>
   (function () {
     const root = document.documentElement;
     const modeButtons = document.querySelectorAll('.seg-btn');
-    const swatchButtons = document.querySelectorAll('.swatch');
 
     function setActiveButtons() {
-      const mode = root.getAttribute('data-theme') || 'auto';
-      const accent = root.getAttribute('data-accent') || 'amber';
+      const mode = root.getAttribute('data-theme');
       modeButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === mode));
-      swatchButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.accent === accent));
     }
     setActiveButtons();
 
     modeButtons.forEach((btn) => btn.addEventListener('click', () => {
-      if (btn.dataset.mode === 'auto') root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', btn.dataset.mode);
+      root.setAttribute('data-theme', btn.dataset.mode);
       try { localStorage.setItem('fmp-theme-mode', btn.dataset.mode); } catch (e) {}
-      setActiveButtons();
-    }));
-
-    swatchButtons.forEach((btn) => btn.addEventListener('click', () => {
-      root.setAttribute('data-accent', btn.dataset.accent);
-      try { localStorage.setItem('fmp-accent', btn.dataset.accent); } catch (e) {}
       setActiveButtons();
     }));
   })();
@@ -516,7 +455,7 @@
 
     const distance = Math.hypot(dx, dy) * METERS_PER_UNIT;
     const bearing = ((Math.atan2(dx, dy) * 180 / Math.PI) + 360) % 360;
-    const mils = bearing * (6400 / 360);
+    const mils = bearing * (640 / 360);
 
     outRange.textContent = distance >= 1000
       ? `${fmt(distance / 1000, 2)} km`
