@@ -319,6 +319,12 @@
     display: flex;
     gap: 8px;
   }
+  .chip-hint {
+    margin: -4px 0 0;
+    font-size: 10.5px;
+    font-style: italic;
+    color: var(--ink-muted);
+  }
   .save-btn {
     flex: 1;
     font-family: "JetBrains Mono", monospace;
@@ -593,6 +599,7 @@
       <div class="presets-actions">
         <button type="button" class="save-btn" id="save-preset">+ Save Points</button>
       </div>
+      <p class="chip-hint">Double-click a saved mortar or target to rename it.</p>
       <div>
         <span class="field-label">Saved Mortars</span>
         <div class="chip-row" id="mortar-chips"></div>
