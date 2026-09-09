@@ -749,6 +749,7 @@
     blue: { name: 'Lonestar', light: '#364de7', lightStrong: '#2b3eb9', dark: '#667aff', darkStrong: '#93a1fb' },
     green: { name: 'Manticore', light: '#36a430', lightStrong: '#2b8326', dark: '#26c91d', darkStrong: '#44dd3c' },
     red: { name: 'Valkyra', light: '#cb3023', lightStrong: '#a2261c', dark: '#c52d20', darkStrong: '#d83e31' },
+    neutral: { name: 'Neutral', light: '#64748b', lightStrong: '#505d6f', dark: '#9aa5b4', darkStrong: '#b3bcc7' },
   };
   const FACTION_ORDER = ['blue', 'green', 'red'];
   const LIGHT_TEXT = '#fff8f0';
@@ -792,6 +793,10 @@
 
   function nonTeamColors() {
     return FACTION_ORDER.filter((c) => c !== myTeam);
+  }
+
+  function targetColorOrder() {
+    return ['neutral', ...nonTeamColors()];
   }
 
   function applyTeamAccent() {
@@ -953,7 +958,7 @@
   }
 
   function cycleTargetColor(entry) {
-    const order = nonTeamColors();
+    const order = targetColorOrder();
     const current = order.indexOf(entry.color);
     entry.color = order[(current + 1) % order.length];
     savePresets();
@@ -1037,19 +1042,32 @@
 
   mapSelect.addEventListener('change', () => {
     try { localStorage.setItem(MAP_KEY, mapSelect.value); } catch (e) {}
-    const map = MAPS[mapSelect.value];
-    if (!map) return;
-    map.towers.forEach((tower) => {
-      if (findByCoords(presets.targets, tower.x, tower.y)) return;
-      presets.targetCounter += 1;
-      presets.targets.push({
-        id: `t${presets.targetCounter}`,
-        name: tower.name,
-        x: tower.x,
-        y: tower.y,
-        color: nonTeamColors()[0],
+    const newMapId = mapSelect.value;
+
+    const removedIds = new Set(
+      presets.targets.filter((t) => t.mapId && t.mapId !== newMapId).map((t) => t.id)
+    );
+    if (removedIds.size) {
+      presets.targets = presets.targets.filter((t) => !removedIds.has(t.id));
+      if (activeTargetId && removedIds.has(activeTargetId)) activeTargetId = null;
+    }
+
+    const map = MAPS[newMapId];
+    if (map) {
+      map.towers.forEach((tower) => {
+        if (findByCoords(presets.targets, tower.x, tower.y)) return;
+        presets.targetCounter += 1;
+        presets.targets.push({
+          id: `t${presets.targetCounter}`,
+          name: tower.name,
+          x: tower.x,
+          y: tower.y,
+          color: 'neutral',
+          mapId: newMapId,
+        });
       });
-    });
+    }
+
     savePresets();
     renderChips();
   });
@@ -1079,7 +1097,7 @@
         activeTargetId = existing.id;
       } else {
         presets.targetCounter += 1;
-        const entry = { id: `t${presets.targetCounter}`, name: `Target ${presets.targetCounter}`, x: x2, y: y2, color: nonTeamColors()[0] };
+        const entry = { id: `t${presets.targetCounter}`, name: `Target ${presets.targetCounter}`, x: x2, y: y2, color: 'neutral' };
         presets.targets.push(entry);
         activeTargetId = entry.id;
       }
