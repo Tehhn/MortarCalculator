@@ -227,6 +227,22 @@
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
+  .map-select {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 9px;
+    color: var(--ink);
+    cursor: pointer;
+    width: 100%;
+  }
+  .map-select:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
   .board {
     width: 100%;
     max-width: 880px;
@@ -575,6 +591,12 @@
       <button type="button" class="team-swatch" data-team="green"><span class="swatch-dot" style="background:#36a430"></span>Manticore</button>
       <button type="button" class="team-swatch" data-team="red"><span class="swatch-dot" style="background:#cb3023"></span>Valkyra</button>
     </div>
+    <span class="field-label">Map</span>
+    <select class="map-select" id="map-select">
+      <option value="">No map</option>
+      <option value="bakurani">Bakurani</option>
+      <option value="ozeti">Ozeti</option>
+    </select>
   </aside>
   <div class="board">
   <div class="points">
@@ -978,6 +1000,52 @@
   }
   updateTeamButtons();
   teamButtons.forEach((btn) => btn.addEventListener('click', () => setMyTeam(btn.dataset.team)));
+
+  const MAPS = {
+    bakurani: {
+      name: 'Bakurani',
+      towers: [
+        { name: 'Tower 1', x: 80.5, y: 69.85 },
+        { name: 'Tower 2', x: 77.2, y: 70 },
+        { name: 'Tower 3', x: 77.2, y: 73.45 },
+      ],
+    },
+    ozeti: {
+      name: 'Ozeti',
+      towers: [
+        { name: 'Tower 1', x: 95.8, y: 69.8 },
+        { name: 'Tower 2', x: 100.4, y: 59.25 },
+        { name: 'Tower 3', x: 104.5, y: 63.7 },
+        { name: 'Tower 4', x: 100.62, y: 67.65 },
+      ],
+    },
+  };
+
+  const MAP_KEY = 'mdc-map';
+  const mapSelect = document.getElementById('map-select');
+  try {
+    const savedMap = localStorage.getItem(MAP_KEY);
+    if (savedMap && MAPS[savedMap]) mapSelect.value = savedMap;
+  } catch (e) {}
+
+  mapSelect.addEventListener('change', () => {
+    try { localStorage.setItem(MAP_KEY, mapSelect.value); } catch (e) {}
+    const map = MAPS[mapSelect.value];
+    if (!map) return;
+    map.towers.forEach((tower) => {
+      if (findByCoords(presets.targets, tower.x, tower.y)) return;
+      presets.targetCounter += 1;
+      presets.targets.push({
+        id: `t${presets.targetCounter}`,
+        name: tower.name,
+        x: tower.x,
+        y: tower.y,
+        color: nonTeamColors()[0],
+      });
+    });
+    savePresets();
+    renderChips();
+  });
 
   saveBtn.addEventListener('click', () => {
     const x1 = parseFloat(ax.value), y1 = parseFloat(ay.value);
